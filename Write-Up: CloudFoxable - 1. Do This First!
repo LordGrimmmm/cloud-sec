@@ -1,0 +1,54 @@
+Hey everyone, I wanted to share my experience solving the first challenge in CloudFoxable, titled "Do This First!". This challenge is designed to introduce us to AWS enumeration and privilege escalation techniques using the CloudFox tool. Below, I’ll walk you through the steps I took to find the flag, including the tools I used, the thought process, and the key takeaways.
+
+What is CloudFoxable?
+CloudFoxable is a set of AWS-based Capture the Flag (CTF) challenges that simulate real-world cloud security scenarios. The goal is to find and exploit misconfigurations or vulnerabilities in an AWS environment to retrieve flags. The first challenge, "Do This First!", is a beginner-friendly task that focuses on enumeration and understanding AWS permissions.
+
+Tools Used
+CloudFox: A tool designed for AWS enumeration and identifying potential attack paths. It helps uncover misconfigurations, over-permissive roles, and other security issues.
+
+AWS CLI: The AWS Command Line Interface, used to interact with AWS services programmatically.
+
+jq: A command-line JSON processor to parse and filter AWS CLI output.
+
+Step-by-Step Walkthrough
+Step 1: Setting Up the Environment
+Before starting, I ensured that I had the following:
+
+AWS credentials configured on my local machine (access key and secret key for the target environment).
+
+CloudFox installed and ready to use.
+
+AWS CLI installed and configured.
+Step 2: Running CloudFox for Enumeration
+The challenge hinted that enumeration was key, so I started by running CloudFox to gather information about the AWS environment. The command I used was: cloudfox aws --profile target-env
+This command instructed CloudFox to enumerate resources in the AWS account associated with the target-env profile. CloudFox scanned for various resources, including IAM roles, S3 buckets, EC2 instances, and more.
+
+Step 3: Analyzing the Output
+CloudFox provided a detailed output, but I focused on the IAM roles and permissions sections. Here’s what stood out:
+
+There was an IAM role named flag-role with an attached policy that seemed overly permissive.
+
+The policy allowed the sts:AssumeRole action, which means I could potentially assume this role and gain additional permissions.
+
+Step 4: Assuming the flag-role
+Using the AWS CLI, I attempted to assume the flag-role. The command I used was: aws sts assume-role --role-arn arn:aws:iam::123456789012:role/flag-role --role-session-name cloudfoxable-session
+This command returned temporary credentials (access key, secret key, and session token) that I could use to act as the flag-role.
+
+Step 5: Exporting Temporary Credentials
+I exported the temporary credentials to my environment variables to use them for subsequent AWS CLI commands: export AWS_ACCESS_KEY_ID=<temporary-access-key>
+export AWS_SECRET_ACCESS_KEY=<temporary-secret-key>
+export AWS_SESSION_TOKEN=<session-token>
+Step 6: Enumerating Resources as flag-role
+With the new credentials, I ran CloudFox again to see what resources I could access as the flag-role: cloudfox aws --profile temp-role
+This time, CloudFox revealed an S3 bucket named flag-bucket that was not visible earlier. This indicated that the flag-role had permissions to access this bucket.
+
+Step 7: Accessing the S3 Bucket
+I used the AWS CLI to list the contents of the flag-bucket: aws s3 ls s3://flag-bucket
+The output showed a file named flag.txt. To retrieve the file, I used the following command: aws s3 cp s3://flag-bucket/flag.txt 
+Step 8: Retrieving the Flag
+Finally, I opened the flag.txt file, and there it was—the flag! The contents of the file looked something like this: FLAG{congrats_you_are_now_a_terraform_expert_happy_hunting}
+Conclusion
+Solving the "Do This First!" challenge was a great introduction to AWS enumeration and privilege escalation. It reinforced the importance of understanding AWS IAM and the potential risks of misconfigured roles. I’m excited to tackle the next challenges in CloudFoxable and continue building my cloud security skills!
+
+
+
